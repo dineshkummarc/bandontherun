@@ -1,0 +1,9 @@
+{"name": "bandontherun",
+ "version": "0.0.1",
+ "description": "Jam with friends.",
+ "keywords": ["music", "jam"],
+ "dependencies": {
+     "mysql": "~>0.9.5",
+     "restify": "~>1.3.0"
+ }
+}
