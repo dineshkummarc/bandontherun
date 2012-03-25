@@ -35,11 +35,13 @@ app.use(express.session({secret: "just-the-letter-a"}));
 app.get('/', function(req, res){
   if (req.session.signedIn) {
     // res.send("Hi " + req.session.screen_name + " it's nice to see you signed in");
-      res.writeHead(302, {Location: "/www/index.html"});
+      res.writeHead(302, {Location: "http://localhost:8888/?logged_in=true"});
       res.end()
   } else {
-    res.send('<a href="/login">login</a>');
+      res.writeHead(302, {Location: "http://localhost:8888/"});
+      res.end();
   }
+    
 });
 
 app.get('/login', function(req, res){
@@ -131,7 +133,7 @@ app.listen(8081);
 
 var static = require('node-static');
 
-var frontend_server = new(static.Server)('.');
+var frontend_server = new(static.Server)('www');
 
 // Adding /games route to the web service
 server.get('/jams', function(req, res) {
@@ -143,7 +145,7 @@ server.get('/jams', function(req, res) {
 // TODO: we're relying on the static server module to not serve
 // anything outside of the www directory, which is a bit of leap of
 // faith from a security standpoint.
-server.get(/^\/www/, function(req, res) {
+server.get(/^\//, function(req, res) {
     console.log("Serving static file: " + req.path);
     frontend_server.serve(req, res, function(err, result) {
         if(err) {

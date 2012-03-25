@@ -3,7 +3,7 @@
 var util = require('util');
 var TwilioClient = require('twilio').Client;
 var Twiml = require('twilio').Twiml;
-var client = new TwilioClient(SID, AUTH_TOKEN, "bandontherun.orospakr.ca");
+var client = new TwilioClient(, AUTH_TOKEN, "bandontherun.orospakr.ca");
 
 var orophone = client.getPhoneNumber('+15551213');
 
