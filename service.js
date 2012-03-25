@@ -1,14 +1,33 @@
 #!/usr/bin/env node
+var util = require("util");
 
 var restify = require('restify');
 var http = require('http');
 var server = restify.createServer();
+
+var static = require('node-static');
+
+var frontend_server = new(static.Server)('.');
 
 // Adding /games route to the web service
 server.get('/jams', function(req, res) {
     var client = require('mysql').createClient({'host':'localhost','port':3306,'user':'band','password':'deadlock'});
     client.query('USE band');
     getJams(client, res);
+});
+
+// TODO: we're relying on the static server module to not serve
+// anything outside of the www directory, which is a bit of leap of
+// faith from a security standpoint.
+server.get(/^\/www/, function(req, res) {
+    console.log("Serving static file: " + req.path);
+    frontend_server.serve(req, res, function(err, result) {
+        if(err) {
+            console.log("Problem serving static file: " + util.inspect(err));
+            res.writeHead(err.status);
+            res.end("NOPE");
+        }
+    });
 });
 
 server.listen(8080);
