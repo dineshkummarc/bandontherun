@@ -1,15 +1,29 @@
 #!/usr/bin/env node
+
+// This is by far the worst Node app I've ever worked on.  I'm... sort of proud.  Or drunk.
+
 var util = require("util");
+
+var optimist = require("optimist");
+
+var argv = optimist.argv;
 
 var restify = require('restify');
 var http = require('http');
 var server = restify.createServer();
 
+var TwilioClient = require('twilio').Client;
+var Twiml = require('twilio').Twiml;
+var client = new TwilioClient(argv["twilio-sid"], argv["twilio-token"], "bandontherun.orospakr.ca");
+
+var orophone = client.getPhoneNumber('+16138007307');
+
+
 var express = require('express');
 var Bird = require('bird')({
-  oauth_token : '',
-  oauth_token_secret : '',
-  callback: 'http://bandontherun.orospakr.ca/'
+  oauth_token : argv["twitter-token"],
+  oauth_token_secret : argv["twitter-token-secret"],
+  callback: 'http://bandontherun.orospakr.ca:8081/callback'
 });
 
 var app = express.createServer();
@@ -20,7 +34,9 @@ app.use(express.session({secret: "just-the-letter-a"}));
 
 app.get('/', function(req, res){
   if (req.session.signedIn) {
-    res.send("Hi " + req.session.screen_name + " it's nice to see you signed in");
+    // res.send("Hi " + req.session.screen_name + " it's nice to see you signed in");
+      res.writeHead(302, {Location: "/www/index.html"});
+      res.end()
   } else {
     res.send('<a href="/login">login</a>');
   }
@@ -41,9 +57,12 @@ app.get('/login', function(req, res){
 });
 
 app.get('/callback', function(req, res){
+        console.log("HELLO> HQfdfslfsd asvfghilsadfl; .");
     Bird.auth_callback(req, function(err, access_token, access_token_secret, data){
+
       if (err) {
         //handle the error here if twitter returns an error
+          console.log("WITWWRWRAER FUCKUPZ" + err);
         res.send(err);
       } else {
         req.session.screen_name = data.screen_name;
@@ -54,6 +73,38 @@ app.get('/callback', function(req, res){
         res.redirect('/');
       }
     });
+});
+
+var joinUserToConference = function(phoneNumber, done) {
+    orophone.setup(function() {
+        orophone.makeCall(phoneNumber, null, function(call) {
+            call.on('answered', function(reqParams, res) {
+                console.log("poor bastard picked up.");
+
+                res.append(new Twiml.Say("Welcome to Band on the Run.  Please wait while your tubes connect."));
+                var dial = new Twiml.Dial();
+                dial.append(new Twiml.Conference("Band on the Run."));
+                res.append(dial);
+                
+                res.send();
+            });
+
+            call.on('ended', function(reqParams) {
+                console.log("He hung up.");
+            });
+        });
+
+        
+    });
+};
+
+app.get("/start_call", function(req, res) {
+    console.log("ZOMG DIALING");
+    joinUserToConference("+16132868829");
+    joinUserToConference("+16136000342");
+    // who cares about correct reporting, lawl
+    res.writeHead(200);
+    res.end();
 });
 
 app.get('/home_timeline', function(req, res){
@@ -68,6 +119,13 @@ app.get('/home_timeline', function(req, res){
       }
     });
 });
+
+app.get(/^\//, function(req, res) {
+    // direct all other requests along to restify
+    server.server.emit('request', req, res);
+});
+
+
 
 app.listen(8081);
 
