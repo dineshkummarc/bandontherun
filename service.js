@@ -1,10 +1,12 @@
+#!/usr/bin/env node
+
 var restify = require('restify');
 var http = require('http');
 var server = restify.createServer();
 
 // Adding /games route to the web service
 server.get('/jams', function(req, res) {
-    var client = require('mysql').createClient({'host':'localhost','port':3306,'user':'root','password':'root'});
+    var client = require('mysql').createClient({'host':'localhost','port':3306,'user':'band','password':'deadlock'});
     client.query('USE band');
     getJams(client, res);
 });
