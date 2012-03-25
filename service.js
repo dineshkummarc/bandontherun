@@ -35,13 +35,12 @@ app.use(express.session({secret: "just-the-letter-a"}));
 app.get('/', function(req, res){
   if (req.session.signedIn) {
     // res.send("Hi " + req.session.screen_name + " it's nice to see you signed in");
-      res.writeHead(302, {Location: "http://localhost:8888/?logged_in=true"});
+      res.writeHead(302, {Location: "/index.html?logged_in=true"});
       res.end()
   } else {
-      res.writeHead(302, {Location: "http://localhost:8888/"});
+      res.writeHead(302, {Location: "/index.html"});
       res.end();
   }
-    
 });
 
 app.get('/login', function(req, res){
